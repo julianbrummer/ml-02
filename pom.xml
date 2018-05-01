@@ -85,7 +85,7 @@
 		          <manifest>
 		            <addClasspath>true</addClasspath>
 		            <classpathPrefix>lib/</classpathPrefix>
-		            <mainClass>uni.ml.exercise.Exercise01Task05</mainClass>
+		            <mainClass>uni.ml.exercise.Exercise02Task01</mainClass>
 		          </manifest>
 		        </archive>
 		      </configuration>
