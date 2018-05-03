@@ -1,8 +1,10 @@
 package uni.ml.tree;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 import uni.ml.dataset.Value;
 
 
@@ -14,8 +16,10 @@ import uni.ml.dataset.Value;
  */
 @RequiredArgsConstructor
 @ToString(includeFieldNames=false)
+@Accessors(fluent=true)
 public class Leaf extends Node {
 	@NonNull
+	@Getter
 	private Value<?> value;
 
 	/**

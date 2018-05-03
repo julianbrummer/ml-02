@@ -33,7 +33,10 @@ public class Dataset extends DatasetView {
 	private EnumAttribute<String> parseAttribute(String line) {
 		String[] parts = line.split("\\{");
 		String attrName = parts[0].trim().split(" ")[1].trim();
-		String[] values = parts[1].substring(0, parts[1].length()-1).split(", ");
+		String[] values = parts[1].substring(0, parts[1].length()-1).split(",");
+		for (int i = 0; i < values.length; i++) {
+			values[i] = values[i].trim();
+		}
 		
 		return new EnumAttribute<>(attrName, values);
 	}

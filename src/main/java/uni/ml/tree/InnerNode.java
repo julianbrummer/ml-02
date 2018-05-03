@@ -40,7 +40,14 @@ public class InnerNode extends Node implements Iterable<Node> {
 		return true;
 	}
 
-
+	public Node child(Value<?> decisionValue) {
+		return children.get(decisionValue);
+	}
+	
+	public Set<Entry<Value<?>, Node>> children() {
+		return children.entrySet();
+	}
+	
 	/**
 	 * Make node visitable, e.g. for printing the tree.
 	 */
@@ -56,9 +63,6 @@ public class InnerNode extends Node implements Iterable<Node> {
 	}
 
 	
-	public Set<Entry<Value<?>, Node>> children() {
-		return children.entrySet();
-	}
 	
 	
 }

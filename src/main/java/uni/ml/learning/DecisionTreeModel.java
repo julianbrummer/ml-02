@@ -8,15 +8,20 @@ import uni.ml.dataset.DatasetIndexedView;
 import uni.ml.dataset.DatasetPredicateView;
 import uni.ml.dataset.DatasetView;
 import uni.ml.dataset.EnumAttribute;
+import uni.ml.dataset.Instance;
 import uni.ml.dataset.Value;
+import uni.ml.tree.Classifier;
 import uni.ml.tree.InnerNode;
 import uni.ml.tree.Leaf;
 import uni.ml.tree.Node;
 import uni.ml.tree.TreeStringBuilder;
 
 
-public class DecisionTree {
+public class DecisionTreeModel {
 
+	private Node root;
+	private EnumAttribute<?> classAttribute;
+	
 	/**
 	 * Selects the partition attribute resulting in the maximum information gain.
 	 */
@@ -41,7 +46,7 @@ public class DecisionTree {
 	 * @param attributes A list of attributes from which to select a decision attribute for this node.  
 	 * @return The root node of the (sub-)tree.
 	 */
-	public static Node trainModel(DatasetView examples, EnumAttribute<?> classAttribute, Set<EnumAttribute<?>> attributes) {
+	private Node trainModel(DatasetView examples, EnumAttribute<?> classAttribute, Set<EnumAttribute<?>> attributes) {
 	
 		if (Measures.entropy(examples, classAttribute) == 0) // all instances have the same value for the target attribute
 			return new Leaf(examples.instanceAt(0).value(classAttribute)); // return a leaf with that value
@@ -57,10 +62,14 @@ public class DecisionTree {
 		for (Value<?> value : node.decisionAttribute()) {
 			// select subset containing only instances with the same decision value
 			DatasetView subset = DatasetPredicateView.selectInstances(examples, node.decisionAttribute(), value);
-			// remove decision attribute and build subtree
-			Set<EnumAttribute<?>> remainingAttributes = new HashSet<>(attributes);
-			remainingAttributes.remove(node.decisionAttribute());
-			node.addChild(value, trainModel(subset, classAttribute, remainingAttributes));
+			if (subset.hasInstances()) {
+				// remove decision attribute and build subtree
+				Set<EnumAttribute<?>> remainingAttributes = new HashSet<>(attributes);
+				remainingAttributes.remove(node.decisionAttribute());
+				node.addChild(value, trainModel(subset, classAttribute, remainingAttributes));
+			} else {
+				node.addChild(value, new Leaf(Measures.mostCommonValue(examples, classAttribute)));
+			}
 		}
 		
 		return node;
@@ -74,8 +83,9 @@ public class DecisionTree {
 	 * @param classAttribute The classification/target attribute. 
 	 * @return The root node of the (sub-)tree.
 	 */
-	public static Node trainModel(Dataset examples, EnumAttribute<?> classAttribute) {
-		return trainModel(examples, classAttribute, examples.attributeSet(classAttribute));
+	public void trainModel(Dataset examples, EnumAttribute<?> classAttribute) {
+		this.root = trainModel(examples, classAttribute, examples.attributeSet(classAttribute));
+		this.classAttribute = classAttribute;
 	}
 	
 	/**
@@ -86,15 +96,42 @@ public class DecisionTree {
 	 * @param classAttribute The classification/target attribute. 
 	 * @return The root node of the (sub-)tree.
 	 */
-	public static Node trainModelOnSubset(Dataset examples, int[] indices, EnumAttribute<?> classAttribute) {
-		return trainModel(new DatasetIndexedView(examples, indices), classAttribute, examples.attributeSet(classAttribute));
+	public void trainModelOnSubset(Dataset examples, int[] indices, EnumAttribute<?> classAttribute) {
+		this.root = trainModel(new DatasetIndexedView(examples, indices), classAttribute, examples.attributeSet(classAttribute));
+		this.classAttribute = classAttribute;
+	}
+	
+	/**
+	 * Tests the model with a test dataset.
+	 * @param testSet The dataset to test the model.
+	 * @return The percantage of correctly classified instances.
+	 */
+	public float testModel(DatasetView testSet) {
+		Classifier classifier = new Classifier(root);
+		int numCorrectlyClassified = 0;
+		for (Instance instance : testSet.instances()) {
+			if (classifier.classify(instance).equals(instance.value(classAttribute))) {
+				numCorrectlyClassified++;
+			}
+		}
+		return (float) numCorrectlyClassified/testSet.numInstances();
+	}
+	
+	/**
+	 * Tests the model with a subset of a dataset.
+	 * @param dataset The dataset to select a test set from.
+	 * @param indices Specifies a subset of the dataset by selecting instances (rows) through indices.
+	 * @return The percantage of correctly classified instances.
+	 */
+	public float testModel(Dataset dataset, int[] indices) {
+		return testModel(new DatasetIndexedView(dataset, indices));
 	}
 	
 	/**
 	 * Convenience method to print a decision tree.
 	 * @param root The root node of the tree to print.
 	 */
-	public static void print(Node root) {
+	public void print() {
 		System.out.println(new TreeStringBuilder().toString(root));
 	}
 	

@@ -43,4 +43,5 @@ public class DatasetIndexedView extends DatasetView {
 	public Instance instanceAt(int index) {
 		return baseView.instanceAt(indices.get(index));
 	}
+
 }

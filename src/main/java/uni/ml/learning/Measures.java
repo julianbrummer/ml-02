@@ -17,6 +17,9 @@ public class Measures {
 	 * Computes the ratio of instances with the specified key,value-pair within a dataset(-view). 
 	 */
 	public static float ratio(DatasetView dataset, EnumAttribute<?> attribute, Value<?> value) {
+		if (!dataset.hasInstances()) {
+			return 0.0f;
+		}
 		DatasetView valueSubset = DatasetPredicateView.selectInstances(dataset, attribute, value); // Sv
 		return (float) valueSubset.numInstances()/dataset.numInstances(); 
 	}
@@ -42,7 +45,7 @@ public class Measures {
 	 * @param dataset The dataset or a view on a subset.
 	 * @param classAttribute The classification attribute with a fixed number of allowed string values.
 	 */
-	public static float entropy(DatasetView dataset, EnumAttribute<?> classAttribute) {		
+	public static float entropy(DatasetView dataset, EnumAttribute<?> classAttribute) {	
 		float entropy = 0.0f;
 		for (Value<?> value : classAttribute) { // iterate over allowed values of the attribute C
 			float pv = ratio(dataset, classAttribute, value);
