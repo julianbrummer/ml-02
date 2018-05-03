@@ -1,7 +1,6 @@
-To run just use the prebuild jar.
-java -jar ml-02-1.0.0
-
-This computes the decision tree from the weather arff file.
+To run just use the prebuild jar. The second parameter is the relative path to the arff file.
+e.g.
+java -jar ml-02-1.0.0.jar ./car.arff
 
 To compile/deploy the application yourself you need to have maven installed.
 In the directory, containing pom.xml call:
