@@ -20,7 +20,6 @@ import uni.ml.tree.TreeStringBuilder;
 public class DecisionTreeModel {
 
 	private Node root;
-	private EnumAttribute<?> classAttribute;
 	
 	/**
 	 * Selects the partition attribute resulting in the maximum information gain.
@@ -85,7 +84,6 @@ public class DecisionTreeModel {
 	 */
 	public void trainModel(Dataset examples, EnumAttribute<?> classAttribute) {
 		this.root = trainModel(examples, classAttribute, examples.attributeSet(classAttribute));
-		this.classAttribute = classAttribute;
 	}
 	
 	/**
@@ -98,7 +96,6 @@ public class DecisionTreeModel {
 	 */
 	public void trainModelOnSubset(Dataset examples, int[] indices, EnumAttribute<?> classAttribute) {
 		this.root = trainModel(new DatasetIndexedView(examples, indices), classAttribute, examples.attributeSet(classAttribute));
-		this.classAttribute = classAttribute;
 	}
 	
 	/**
@@ -106,7 +103,7 @@ public class DecisionTreeModel {
 	 * @param testSet The dataset to test the model.
 	 * @return The percantage of correctly classified instances.
 	 */
-	public float testModel(DatasetView testSet) {
+	public float testModel(DatasetView testSet, EnumAttribute<?> classAttribute) {
 		Classifier classifier = new Classifier(root);
 		int numCorrectlyClassified = 0;
 		for (Instance instance : testSet.instances()) {
@@ -116,6 +113,7 @@ public class DecisionTreeModel {
 		}
 		return (float) numCorrectlyClassified/testSet.numInstances();
 	}
+
 	
 	/**
 	 * Tests the model with a subset of a dataset.
@@ -123,9 +121,10 @@ public class DecisionTreeModel {
 	 * @param indices Specifies a subset of the dataset by selecting instances (rows) through indices.
 	 * @return The percantage of correctly classified instances.
 	 */
-	public float testModel(Dataset dataset, int[] indices) {
-		return testModel(new DatasetIndexedView(dataset, indices));
+	public float testModelOnSubset(Dataset dataset, int[] indices, EnumAttribute<?> classAttribute) {
+		return testModel(new DatasetIndexedView(dataset, indices), classAttribute);
 	}
+	
 	
 	/**
 	 * Convenience method to print a decision tree.
@@ -133,6 +132,34 @@ public class DecisionTreeModel {
 	 */
 	public void print() {
 		System.out.println(new TreeStringBuilder().toString(root));
+	}
+	
+	/**
+	 * Trains and tests a model a number of times.
+	 * @param dataset The dataset to train and test the model with. The dataset is split randomly into a training and test set. 
+	 * @param trainingRatio The ratio of the dataset to use for training.
+	 * @param repeats The number of training and test cycles.
+	 * @param classAttribute The target/classification attribute.
+	 * @return The mean and standard deviation of correctly classified instances.
+	 */
+	public static ClassificationResult trainAndTestModel(Dataset dataset, float trainingRatio, int repeats, EnumAttribute<?> classAttribute) {
+		float meanClassified = 0.0f;
+		float deviationClassified = 0.0f;
+		float[] classified = new float[repeats];
+		DecisionTreeModel model = new DecisionTreeModel();
+		for (int i = 0; i < repeats; i++) {
+			Selection.Split split = Selection.randomSplit(trainingRatio, dataset.numInstances());
+			model.trainModelOnSubset(dataset, split.first(), classAttribute);
+			classified[i] = model.testModelOnSubset(dataset, split.second(), classAttribute);
+			meanClassified += classified[i];
+		}
+		meanClassified /= repeats;
+		for (int i = 0; i < repeats; i++) {
+			deviationClassified += Math.pow(classified[i]-meanClassified, 2);
+		}
+		deviationClassified /= repeats;
+		deviationClassified = (float) Math.sqrt(deviationClassified);
+		return new ClassificationResult(meanClassified, deviationClassified);
 	}
 	
 }

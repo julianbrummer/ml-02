@@ -5,6 +5,11 @@ import lombok.RequiredArgsConstructor;
 import uni.ml.dataset.Instance;
 import uni.ml.dataset.Value;
 
+/**
+ * Can be used to classify an instance of a dataset with a decision tree. 
+ * @author Julian Brummer
+ *
+ */
 @RequiredArgsConstructor
 public class Classifier implements NodeVisitor {
 

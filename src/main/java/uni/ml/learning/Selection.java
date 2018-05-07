@@ -9,6 +9,10 @@ import java.util.stream.IntStream;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Convenient class to select instance indices from a dataset.
+ * @author Julian Brummer
+ */
 public class Selection {
 	
 	@AllArgsConstructor

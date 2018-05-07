@@ -100,4 +100,5 @@ public class Measures {
 		// compute information gain from subset S
 		return informationGain(new DatasetIndexedView(dataset, indices), classAttribute, splitAttribute);
 	}
+	
 }

@@ -50,7 +50,9 @@ public class Exercise02Task01 {
 			System.out.println("Dataset: " + dataset.name());
 			System.out.println("Size of training set: " + split.sizeFirst());
 			System.out.println("Size of test set: " + split.sizeSecond());
-			System.out.println("Correctly classified: " + model.testModel(dataset, split.second()));
+			System.out.println("Correctly classified: " + model.testModelOnSubset(dataset, split.second(), dataset.lastAttribute()));
+			
+			System.out.println(DecisionTreeModel.trainAndTestModel(dataset, 2.0f/3.0f, 10, dataset.lastAttribute()));
 		}
 		
 	}
